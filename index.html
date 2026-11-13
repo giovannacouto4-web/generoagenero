@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gênero a gênero</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231458c7'/%3E%3Crect x='6' y='15' width='5' height='10' rx='1' fill='%23ff5a4f'/%3E%3Crect x='13.5' y='7' width='5' height='18' rx='1' fill='%23ff5a4f'/%3E%3Crect x='21' y='18.7' width='5' height='6.3' rx='1' fill='%23ff5a4f'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter+Tight:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--g:#ffb347;--f:#0d0d10;--bg:#0a0a1c;--tx:#ecebff;--dim:#a3a1cb;--rule:#262550;
@@ -116,7 +117,6 @@ h1.qh{font-size:clamp(2.6rem,7vw,5.2rem);line-height:1;max-width:15ch;color:var(
 .why{display:grid;gap:.7rem;margin:0 0 1.5rem;padding:0;list-style:none;font:400 1.1rem/1.55 var(--sans);color:#d6d4f2;max-width:60ch}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .tag b{font:700 1.4rem/1.05 'Inter Tight',system-ui,sans-serif;letter-spacing:-.02em}
-#tabs button{font-size:.64rem;letter-spacing:.14em}
 .songs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0 2rem}
 .song{padding:1rem 0;border-top:1px solid var(--rule)}
 .song b{display:block;font:500 1.15rem/1.3 var(--sans)}
@@ -127,7 +127,7 @@ body{font-weight:300}
 dd{font-weight:500}
 .bar{background:#1458c7}
 #main .cta button:hover,#main .cta button[aria-selected=true]{color:#1458c7}
-#panel h1:not(.qh){font-size:clamp(3rem,9vw,6.5rem)}
+#panel h1:not(.qh){font-size:clamp(2.4rem,6.5vw,4.6rem)}
 .cov{width:64px;height:64px;border-radius:6px;background:var(--rule);flex:none;object-fit:cover;display:block}
 .song,.pk a{display:flex;align-items:center;gap:1rem}
 .song .tx,.pk .tx{min-width:0}
@@ -227,7 +227,7 @@ function go(key,push=true){
   const g=G[keys.indexOf(key)],d=DATA[key],r=document.documentElement.style;
   r.setProperty('--g',g[2]);r.setProperty('--f',g[3]);document.body.style.color=g[3];
   document.querySelectorAll('[role=tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.k==key));
-  document.title=g[1]+' · Gênero a gênero';
+  document.title='Gênero a gênero';
   if(push&&location.hash!='#'+key)history.replaceState(null,'','#'+key);
   const ranks=FE.map(f=>({f,r:rk(f.k,key)}));
   const ext=ranks.map(o=>({...o,e:Math.min(o.r,16-o.r)})).sort((a,b)=>a.e-b.e);
@@ -262,7 +262,7 @@ function chart(title,k,f){
 function geral(push){
   document.documentElement.style.setProperty('--g','#eeeaff');
   document.querySelectorAll('[role=tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.k=='geral'));
-  document.title='Visão geral · Gênero a gênero';
+  document.title='Gênero a gênero';
   if(push&&location.hash!='#geral')history.replaceState(null,'','#geral');
   const tot=keys.reduce((a,o)=>a+DATA[o].n,0);
   $('panel').innerHTML=`<p class="story">A base reúne ${N(tot)} faixas únicas dos 15 gêneros analisados. Aqui cada gênero é comparado com todos os outros, nos oito indicadores analisados no notebook (valores medianos). Clique em qualquer gênero para abrir a página dele.</p>
@@ -296,7 +296,7 @@ const gv=o=>FK.map((k,i)=>(DATA[o][k]-MM[i][0])/(MM[i][1]-MM[i][0]));
 function quiz(push){
   const r=document.documentElement.style;r.setProperty('--g','#eeeaff');
   document.querySelectorAll('[role=tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.k=='quiz'));
-  document.title='Descubra o seu estilo · Gênero a gênero';
+  document.title='Gênero a gênero';
   if(push&&location.hash!='#quiz')history.replaceState(null,'','#quiz');
   qs={i:0,a:[]};qView();
 }
