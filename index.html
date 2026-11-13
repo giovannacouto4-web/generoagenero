@@ -256,7 +256,7 @@ function go(key,push=true){
   r.setProperty('--g',g[2]);r.setProperty('--f',g[3]);document.body.style.color=g[3];
   document.querySelectorAll('[role=tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.k==key));
   document.title='Gênero a gênero';
-  if(push&&location.hash!='#'+key)history.replaceState(null,'','#'+key);
+  if(push&&location.hash!='#'+key)history.pushState(null,'','#'+key);
   const ranks=FE.map(f=>({f,r:rk(f.k,key)}));
   const ext=ranks.map(o=>({...o,e:Math.min(o.r,16-o.r)})).sort((a,b)=>a.e-b.e);
   const strips=FE.map(f=>{const v=keys.map(o=>DATA[o][f.k]),mn=Math.min(...v),mx=Math.max(...v),pos=x=>((x-mn)/(mx-mn)*96+2);
@@ -291,12 +291,12 @@ function geral(push){
   document.documentElement.style.setProperty('--g','#eeeaff');
   document.querySelectorAll('[role=tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.k=='geral'));
   document.title='Gênero a gênero';
-  if(push&&location.hash!='#geral')history.replaceState(null,'','#geral');
+  if(push&&location.hash!='#geral')history.pushState(null,'','#geral');
   const tot=keys.reduce((a,o)=>a+DATA[o].n,0);
   $('panel').innerHTML=`<p class="story">A base reúne ${N(tot)} faixas únicas dos 15 gêneros analisados. Aqui cada gênero é comparado com todos os outros, nos oito indicadores analisados no notebook (valores medianos). Clique em qualquer gênero para abrir a página dele.</p>
   <h2>O que os dados apontam</h2><div class="charts">${FE.map(f=>chart(f.n,f.k,x=>fm(f,x))).join('')}</div>
   <h2>Uma faixa popular de cada gênero</h2><div class="picks">${keys.map(o=>`<div class="pk"><button class="pkg" data-go="${o}" style="color:${ac(o)}">${nm(o)}</button><a class="yt" href="${yt(DATA[o].tr[0])}" target="_blank" rel="noopener"><img class="cov" data-sp="${yt(DATA[o].tr[0])}" alt="" width="64" height="64"><div class="tx"><b>${DATA[o].tr[0][0]}</b><span>${DATA[o].tr[0][1]}</span></div></a></div>`).join('')}</div>
-  <h2>Quizzes</h2><p class="story">Descubra o seu estilo, o seu humor do dia, a sua década, a trilha sonora da sua história e teste o seu ouvido num duelo de dados.</p><p><button class="btn" data-go="quiz">Ver os quizzes</button></p>`;covers();
+  <h2>Quizzes</h2><p class="story">Descubra o seu estilo, o seu mood do dia, a sua década, a trilha sonora da sua história e teste o seu ouvido num duelo de dados.</p><p><button class="btn" data-go="quiz">Ver os quizzes</button></p>`;covers();
 }
 $('panel').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){go(b.dataset.go);scrollTo({top:0,behavior:'smooth'})}});
 /* ---------- hero ---------- */
@@ -354,7 +354,7 @@ const QS=[
 ];
 const QN={
  estilo:{n:'Descubra o seu estilo',d:'Oito perguntas sobre o seu gosto e o gênero que mais combina com ele.',m:'8 perguntas',q:Q},
- humor:{n:'Humor do dia',d:'Como você está hoje? Descubra o gênero e a música certa para o seu dia.',m:'5 perguntas',q:QH},
+ humor:{n:'Mood do dia',d:'Como você está hoje? Descubra o gênero e a música certa para o seu dia.',m:'5 perguntas',q:QH},
  decada:{n:'Qual década combina com você?',d:'Seu jeito de ser tem a cara de qual época? Descubra a sua década e os gêneros que nasceram nela.',m:'6 perguntas',q:QD},
  historia:{n:'Qual é o gênero da sua história?',d:'Imagine que sua vida é um filme ou uma série. Qual gênero toca nos seus momentos, conquistas, romances e aventuras?',m:'8 perguntas',q:QS},
  duelo:{n:'Duelo dos dados',d:'Dez duelos entre gêneros. Adivinhe qual tem mais energia, dançabilidade, volume e mais, e confira nos números reais.',m:'10 duelos'}
@@ -375,7 +375,7 @@ function quiz(key,push){
   accent('#eeeaff');
   document.querySelectorAll('[role=tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.k=='quiz'));
   document.title='Gênero a gênero';
-  if(push&&location.hash!='#'+key)history.replaceState(null,'','#'+key);
+  if(push&&location.hash!='#'+key)history.pushState(null,'','#'+key);
   if(key=='quiz')return hub();
   start(key.slice(5));
 }
@@ -384,7 +384,7 @@ function hub(){
 }
 function start(id){
   if(!QN[id])return hub();
-  if(location.hash!='#quiz-'+id)history.replaceState(null,'','#quiz-'+id);
+  if(location.hash!='#quiz-'+id)history.pushState(null,'','#quiz-'+id);
   qs={id,i:0,a:[]};
   if(id=='duelo')return dStart();
   qView();
@@ -408,7 +408,7 @@ function rHumor(){
   const {T,R}=best(ansOf(QH)),top=R[0],g=G[keys.indexOf(top.o)];accent(g[2]);
   const e=T[3]>=.5,v=T[6]>=.5,mood=e&&v?'Dia de festa':e?'Dia de intensidade':v?'Dia de leveza':'Dia de recolhimento';
   const s=DATA[top.o].tr[qs.a.reduce((a,b)=>a+b,0)%3];
-  $('panel').innerHTML=`<p class="place">O seu humor de hoje</p><h1>${mood}</h1><p class="story">A trilha de hoje é <b style="color:${g[2]}">${g[1]}</b>, com afinidade de ${top.aff}% com o seu dia.</p>
+  $('panel').innerHTML=`<p class="place">O seu mood de hoje</p><h1>${mood}</h1><p class="story">A trilha de hoje é <b style="color:${g[2]}">${g[1]}</b>, com afinidade de ${top.aff}% com o seu dia.</p>
   <h2>Para ouvir agora</h2><div class="songs"><a class="song yt" href="${yt(s)}" target="_blank" rel="noopener"><img class="cov" data-sp="${yt(s)}" alt="" width="64" height="64"><div class="tx"><b>${s[0]}</b><span>${s[1]} · popularidade ${s[2]}</span></div></a></div>
   <p class="hint">Clique na música para ouvir no Spotify.</p>${tail(top.o)}`;
   covers();
@@ -470,6 +470,7 @@ $('panel').addEventListener('click',e=>{
   if(c('#dn')){ds.i++;dView();return}
   if(x=c('.btn[data-k],.chap[data-k]')){go(x.dataset.k);scrollTo({top:0,behavior:'smooth'})}
 });
+addEventListener('popstate',()=>go(location.hash.slice(1),false));
 addEventListener('hashchange',()=>go(location.hash.slice(1),false));
 go(location.hash.slice(1),false);
 </script>
