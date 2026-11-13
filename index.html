@@ -127,7 +127,10 @@ body{font-weight:300}
 dd{font-weight:500}
 .bar{background:#1458c7}
 #main .cta button:hover,#main .cta button[aria-selected=true]{color:#1458c7}
-.hc h1{font-family:'Inter Tight',system-ui,sans-serif;font-weight:700;letter-spacing:-.035em;line-height:1.02;font-size:clamp(3rem,9vw,6.8rem)}
+#panel h1:not(.qh){font-size:clamp(3rem,9vw,6.5rem)}
+.cov{width:64px;height:64px;border-radius:6px;background:var(--rule);flex:none;object-fit:cover;display:block}
+.song,.pk a{display:flex;align-items:center;gap:1rem}
+.song .tx,.pk .tx{min-width:0}
 </style>
 </head>
 <body>
@@ -231,6 +234,7 @@ function go(key,push=true){
   const strips=FE.map(f=>{const v=keys.map(o=>DATA[o][f.k]),mn=Math.min(...v),mx=Math.max(...v),pos=x=>((x-mn)/(mx-mn)*96+2);
     const rr=rk(f.k,key);
     return `<li><div class="lb">${f.n}<span>${fm(f,d[f.k])} · ${rr}º de 15</span></div><div class="line">${keys.map(o=>`<button class="tick" style="left:${pos(DATA[o][f.k])}%" data-k="${o}" title="${G[keys.indexOf(o)][1]}: ${fm(f,DATA[o][f.k])}" aria-label="Ver ${G[keys.indexOf(o)][1]}"></button>`).join('')}<i class="me" style="left:${pos(d[f.k])}%"></i></div></li>`}).join('');
+  const pid=PL[key],plink=pid?'https://open.spotify.com/playlist/'+pid:'https://open.spotify.com/search/'+encodeURIComponent(g[1]+' playlist');
   const sn=(o,pre)=>`${pre}${o.f.n.toLowerCase()}: ${o.r}º lugar entre os 15 gêneros, com ${fm(o.f,d[o.f.k])}, contra ${fm(o.f,avg(o.f.k))} na média geral.${o.r==1?' É o maior valor da lista.':o.r==15?' É o menor valor da lista.':''}`;
   const f1=sn(ext[0],`O que mais separa o ${g[1]} dos outros é a `).replace(' a volume',' o volume').replace(' a andamento',' o andamento').replace(' a duração',' a duração').replace(' a popularidade (0 a 100)',' a popularidade (0 a 100)').replace(' a energia',' a energia').replace(' a valência',' a valência');
   const f2=sn(ext[1],'Em seguida vem a ').replace(' a volume',' o volume').replace(' a andamento',' o andamento');
@@ -240,12 +244,16 @@ function go(key,push=true){
   <div class="data"><div><ul class="sig">${strips}</ul><p class="hint">Cada risco é um gênero e o círculo é o ${g[1]}. Clique em um risco para ir até ele. Os valores são a mediana de cada gênero.</p></div>
    <div><dl><div><dt>Faixas na base</dt><dd>${N(d.n)}</dd></div>${FE.map(f=>`<div><dt>${f.n}</dt><dd>${fm(f,d[f.k])}</dd></div>`).join('')}</dl></div></div>
   <div class="find"><p>${f1}</p><p>${f2}</p></div>
-  <h2>Faixas populares</h2><div class="songs">${d.tr.slice(0,3).map(s=>`<a class="song yt" href="${yt(s)}" target="_blank" rel="noopener"><b>${s[0]}</b><span>${s[1]} · popularidade ${s[2]}</span></a>`).join('')}</div><p class="hint">Clique em uma faixa para ouvir no Spotify.</p><p class="also">Artistas que mais aparecem na base: ${d.ar.map(a=>a[0]+' ('+a[1]+' faixas)').join(', ').replace(/, ([^,]*)$/,' e $1')}.</p>`;
+  <h2>Faixas populares</h2><div class="songs">${d.tr.slice(0,3).map(s=>`<a class="song yt" href="${yt(s)}" target="_blank" rel="noopener"><img class="cov" data-sp="${yt(s)}" alt="" width="64" height="64"><div class="tx"><b>${s[0]}</b><span>${s[1]} · popularidade ${s[2]}</span></div></a>`).join('')}</div><p class="hint">Clique em uma faixa para ouvir no Spotify.</p><h2>Playlist no Spotify</h2><div class="songs"><a class="song yt" href="${plink}" target="_blank" rel="noopener"><img class="cov" ${pid?`data-sp="${plink}"`:''} alt="" width="64" height="64"><div class="tx"><b${pid?' data-pt':''}>${pid?'Ouvir a playlist de '+g[1]:'Buscar playlists de '+g[1]}</b><span>No Spotify</span></div></a></div><p class="also">Artistas que mais aparecem na base: ${d.ar.map(a=>a[0]+' ('+a[1]+' faixas)').join(', ').replace(/, ([^,]*)$/,' e $1')}.</p>`;covers();
 }
 $('panel').addEventListener('click',e=>{const b=e.target.closest('.tick');if(b){go(b.dataset.k);scrollTo({top:0,behavior:'smooth'})}});
 /* ---------- geral ---------- */
 const nm=o=>G[keys.indexOf(o)][1],ac=o=>G[keys.indexOf(o)][2];
 const yt=t=>'https://open.spotify.com/track/'+t[3];
+const PL={pagode:'1a2Dc1q7ADBWUeyMsfweTK',sertanejo:'05dCuSt5JIFVzBNOshPLtW',pop:'37i9dQZF1DXcBWIGoYBM5M',hiphop:'37i9dQZF1DX0XUsuxWHRQd',rock:'37i9dQZF1DWXRqgorJj26U'};
+const CV={};
+const cover=u=>CV[u]||(CV[u]=fetch('https://open.spotify.com/oembed?url='+encodeURIComponent(u)).then(r=>r.ok?r.json():null).catch(()=>null));
+function covers(){document.querySelectorAll('[data-sp]').forEach(el=>cover(el.dataset.sp).then(j=>{if(j&&j.thumbnail_url)el.src=j.thumbnail_url;const x=el.parentNode.querySelector('[data-pt]');if(x&&j&&j.title)x.textContent=j.title}))}
 const dec=x=>x.toFixed(1).replace('.',',');
 const NUM=[['n','Faixas na base',x=>N(Math.round(x))],['p','Popularidade média',dec],['x','Faixas explícitas',x=>dec(x)+'%'],['du','Duração média',x=>mmss(Math.round(x))],['m','Faixas em tom maior',x=>Math.round(x)+'%']];
 function chart(title,k,f){
@@ -259,8 +267,8 @@ function geral(push){
   const tot=keys.reduce((a,o)=>a+DATA[o].n,0);
   $('panel').innerHTML=`<p class="story">A base reúne ${N(tot)} faixas únicas dos 15 gêneros analisados. Aqui cada gênero é comparado com todos os outros, nos oito indicadores analisados no notebook (valores medianos). Clique em qualquer gênero para abrir a página dele.</p>
   <h2>O que os dados apontam</h2><div class="charts">${FE.map(f=>chart(f.n,f.k,x=>fm(f,x))).join('')}</div>
-  <h2>Uma faixa popular de cada gênero</h2><div class="picks">${keys.map(o=>`<div class="pk"><button class="pkg" data-go="${o}" style="color:${ac(o)}">${nm(o)}</button><a class="yt" href="${yt(DATA[o].tr[0])}" target="_blank" rel="noopener"><b>${DATA[o].tr[0][0]}</b><span>${DATA[o].tr[0][1]}</span></a></div>`).join('')}</div>
-  <h2>E o seu estilo?</h2><p class="story">Responda oito perguntas rápidas e veja de qual gênero o seu gosto mais se aproxima.</p><p><button class="btn" data-go="quiz">Descubra o seu estilo</button></p>`;
+  <h2>Uma faixa popular de cada gênero</h2><div class="picks">${keys.map(o=>`<div class="pk"><button class="pkg" data-go="${o}" style="color:${ac(o)}">${nm(o)}</button><a class="yt" href="${yt(DATA[o].tr[0])}" target="_blank" rel="noopener"><img class="cov" data-sp="${yt(DATA[o].tr[0])}" alt="" width="64" height="64"><div class="tx"><b>${DATA[o].tr[0][0]}</b><span>${DATA[o].tr[0][1]}</span></div></a></div>`).join('')}</div>
+  <h2>E o seu estilo?</h2><p class="story">Responda oito perguntas rápidas e veja de qual gênero o seu gosto mais se aproxima.</p><p><button class="btn" data-go="quiz">Descubra o seu estilo</button></p>`;covers();
 }
 $('panel').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){go(b.dataset.go);scrollTo({top:0,behavior:'smooth'})}});
 /* ---------- hero ---------- */
