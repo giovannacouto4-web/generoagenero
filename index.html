@@ -131,6 +131,33 @@ dd{font-weight:500}
 .cov{width:64px;height:64px;border-radius:6px;background:var(--rule);flex:none;object-fit:cover;display:block}
 .song,.pk a{display:flex;align-items:center;gap:1rem}
 .song .tx,.pk .tx{min-width:0}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.qcard{display:flex;flex-direction:column;gap:.55rem;padding:1.5rem;border:1px solid var(--rule);border-radius:16px;background:rgba(255,255,255,.02);transition:transform .2s,border-color .2s,background .2s}
+.qcard:hover{transform:translateY(-4px);border-color:var(--tx);background:rgba(255,255,255,.05)}
+.qcard b{font:700 1.45rem/1.15 var(--serif)}
+.qcard span{color:var(--dim);font-weight:300}
+.qcard em{margin-top:auto;padding-top:.7rem;font-style:normal;font-size:.85rem;color:#ff5a4f}
+.chaps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:0 0 1.5rem}
+.chap{display:flex;flex-direction:column;gap:.35rem;padding:1.25rem;border:1px solid var(--rule);border-radius:14px;transition:transform .2s,border-color .2s}
+.chap:hover{transform:translateY(-3px);border-color:var(--tx)}
+.chap small{color:var(--dim);font-size:.85rem}
+.chap b{font:700 1.8rem/1.1 var(--serif)}
+.chap span{color:var(--dim);font-size:.9rem;font-weight:300}
+.duel{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:stretch;margin:1.5rem 0}
+.vs{align-self:center;font:800 1.6rem var(--serif);color:var(--dim);font-style:normal}
+.dcard{min-height:200px;display:flex;flex-direction:column;justify-content:space-between;padding:1.5rem;border:2px solid var(--rule);border-radius:18px;background:linear-gradient(160deg,color-mix(in srgb,var(--c) 30%,#0a0a1c),#0a0a1c 78%);transition:transform .2s,border-color .2s,opacity .3s;color:var(--tx)}
+.dcard:not(:disabled):hover{transform:translateY(-4px) scale(1.01);border-color:var(--c)}
+.dcard b{font:800 clamp(1.8rem,5vw,3rem)/1 var(--serif);color:var(--c)}
+.dv{display:block;min-height:3.4rem}
+.dv em{font:700 1.7rem var(--serif);font-style:normal}
+.dv u{display:block;height:8px;border-radius:4px;background:var(--c);margin-top:.55rem;animation:grow .7s cubic-bezier(.3,.9,.3,1)}
+@keyframes grow{from{width:0}}
+.dcard.win{border-color:var(--c)}
+.dcard.lose{opacity:.55}
+.dres{min-height:5rem;font-size:1.1rem}
+.dres p{margin:0 0 1rem}
+.dst{color:var(--dim);margin:0}
+@media (max-width:640px){.duel{grid-template-columns:1fr}.vs{display:none}}
 </style>
 </head>
 <body>
@@ -216,13 +243,14 @@ const mmss=s=>Math.floor(s/60)+' min '+String(s%60).padStart(2,'0')+' s';
 const N=x=>x.toLocaleString('pt-BR');
 
 const tab=(k,l,c='')=>`<li class="${c}" role="presentation"><button role="tab" data-k="${k}" aria-selected="false">${l}</button></li>`;
-$('main').innerHTML=tab('geral','Início')+tab('quiz','Descubra o seu estilo','cta');
+$('main').innerHTML=tab('geral','Início')+tab('quiz','Quizzes','cta');
 $('tabs').innerHTML=G.map(g=>tab(g[0],g[1])).join('');
 $('tabs').onclick=$('main').onclick=e=>{const b=e.target.closest('button');if(b)go(b.dataset.k)};
 
 function go(key,push=true){
-  $('hero').hidden=key=='quiz'||keys.includes(key);
-  if(key=='quiz')return quiz(push);
+  const isQ=key.startsWith('quiz');
+  $('hero').hidden=isQ||keys.includes(key);
+  if(isQ)return quiz(key,push);
   if(!keys.includes(key))return geral(push);
   const g=G[keys.indexOf(key)],d=DATA[key],r=document.documentElement.style;
   r.setProperty('--g',g[2]);r.setProperty('--f',g[3]);document.body.style.color=g[3];
@@ -268,7 +296,7 @@ function geral(push){
   $('panel').innerHTML=`<p class="story">A base reúne ${N(tot)} faixas únicas dos 15 gêneros analisados. Aqui cada gênero é comparado com todos os outros, nos oito indicadores analisados no notebook (valores medianos). Clique em qualquer gênero para abrir a página dele.</p>
   <h2>O que os dados apontam</h2><div class="charts">${FE.map(f=>chart(f.n,f.k,x=>fm(f,x))).join('')}</div>
   <h2>Uma faixa popular de cada gênero</h2><div class="picks">${keys.map(o=>`<div class="pk"><button class="pkg" data-go="${o}" style="color:${ac(o)}">${nm(o)}</button><a class="yt" href="${yt(DATA[o].tr[0])}" target="_blank" rel="noopener"><img class="cov" data-sp="${yt(DATA[o].tr[0])}" alt="" width="64" height="64"><div class="tx"><b>${DATA[o].tr[0][0]}</b><span>${DATA[o].tr[0][1]}</span></div></a></div>`).join('')}</div>
-  <h2>E o seu estilo?</h2><p class="story">Responda oito perguntas rápidas e veja de qual gênero o seu gosto mais se aproxima.</p><p><button class="btn" data-go="quiz">Descubra o seu estilo</button></p>`;covers();
+  <h2>Quizzes</h2><p class="story">Descubra o seu estilo, o seu humor do dia, a sua década, a trilha sonora da sua história e teste o seu ouvido num duelo de dados.</p><p><button class="btn" data-go="quiz">Ver os quizzes</button></p>`;covers();
 }
 $('panel').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){go(b.dataset.go);scrollTo({top:0,behavior:'smooth'})}});
 /* ---------- hero ---------- */
@@ -279,7 +307,7 @@ $('hero').addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(
 $('sf').addEventListener('submit',e=>{e.preventDefault();const q=nz($('q').value);
   const o=q&&(keys.find(k=>nz(nm(k))==q||k==q)||keys.find(k=>nz(nm(k)).startsWith(q))||keys.find(k=>nz(nm(k)).includes(q)));
   if(o){$('msg').textContent='';$('q').value='';go(o);scrollTo({top:0,behavior:'smooth'})}else $('msg').textContent='Não achei esse gênero. Escolha um dos 15 da lista.'});
-/* ---------- quiz ---------- */
+/* ---------- quizzes ---------- */
 const Q=[
 ['Sábado, 18h. Onde você está?',[['Em um churrasco com a caixa de som no máximo',{e:.8,d:.8,v:.8,l:.8}],['Em casa, sozinho, de fone de ouvido',{e:.25,l:.2,v:.4}],['Em um show, no meio da plateia',{e:.85,l:.95}],['Na cozinha, com a casa aberta e panela no fogo',{a:.7,v:.7,e:.45}]]],
 ['O que você quer sentir ao apertar o play?',[['Alegria pura',{v:.95,e:.75}],['Acolhimento',{v:.6,a:.8,e:.3}],['Vontade de pensar na vida',{v:.15,e:.4}],['Vontade de dançar sem parar',{d:.95,v:.7}]]],
@@ -290,41 +318,157 @@ const Q=[
 ['Quanto tempo uma música deve durar?',[['Curta e direta',{du:.1}],['Média, o tempo de um refrão a mais',{du:.5}],['Longa, para se perder nela',{du:.95}]]],
 ['Pista ou sofá?',[['Pista, sem dúvida',{d:.9,e:.85}],['Sofá, com a luz baixa',{d:.2,e:.25}],['Roda de amigos, no meio-termo',{d:.6,e:.5}]]]
 ];
-let qs={i:0,a:[]};
+const QH=[
+['Como você acordou hoje?',[['Cheio de energia',{e:.9,t:.7}],['Com preguiça',{e:.15,t:.2}],['De bom humor',{v:.9}],['Com a cabeça cheia',{v:.2,e:.4}]]],
+['Como está o clima lá fora?',[['Sol forte',{v:.85,e:.7,a:.3}],['Chuva',{v:.25,a:.7,e:.25}],['Nublado',{v:.45,e:.4}],['Nem olhei, estou dentro de casa',{a:.5,l:.3}]]],
+['Qual é a sua vontade hoje?',[['Dançar',{d:.95,e:.85}],['Ficar na minha',{d:.2,e:.2,l:.15}],['Cantar alto',{v:.8,l:.8,p:.8}],['Correr atrás das coisas',{e:.9,t:.85}]]],
+['Como está a sua bateria social?',[['Cheia, quero gente por perto',{v:.8,d:.8,l:.7}],['Meio a meio',{v:.5,e:.5}],['Zerada, só quero silêncio',{l:.1,e:.2,a:.7}]]],
+['Como você quer se sentir no fim do dia?',[['Mais leve',{v:.8,a:.6}],['Energizado',{e:.9}],['Acolhido',{a:.8,v:.6,e:.3}],['Catártico, pondo tudo para fora',{e:.8,v:.15,l:.9}]]]
+];
+const DEC=[
+{k:'40',n:'Anos 1940',t:'Raiz e rádio. Você valoriza o que tem história e vem do coração.',g:['forro','rnb']},
+{k:'50',n:'Anos 1950',t:'Juventude, guitarra e atitude. Você quer mudar o jogo.',g:['rock','pop']},
+{k:'60',n:'Anos 1960',t:'Festivais, poesia e liberdade. Você quer letra, ideia e mudança.',g:['mpb','funk','reggae']},
+{k:'70',n:'Anos 1970',t:'Roda de amigos e pista de dança. Você vive no coletivo.',g:['pagode','hiphop']},
+{k:'80',n:'Anos 1980',t:'Sintetizadores e emoção à flor da pele. Você sente tudo com intensidade.',g:['eletronico','emo']},
+{k:'90',n:'Anos 1990',t:'Tudo se mistura. Você é curioso e gosta de novidade de qualquer lugar.',g:['kpop','gospel']},
+{k:'10',n:'Anos 2010',t:'Refrão para cantar junto e hit no fone. Você é sociável e vive de música que gruda.',g:['sertanejo']}
+];
+const QD=[
+['Qual é o seu fim de semana ideal?',[['Roda de amigos, comida e música ao vivo','40 70'],['Show de rock ou festival ao ar livre','50 60'],['Balada até o sol nascer','80 90'],['Maratona de série com os fones no ouvido','10']]],
+['Como você escolhe o que ouvir?',[['Pelo rádio ou pela indicação de alguém','40 50'],['Pela letra e pela história','60 70'],['Pelo que está bombando agora','90 10'],['Pelo clima, quero sentir algo forte','80']]],
+['Qual é o seu estilo de roupa?',[['Clássico e atemporal','40 50'],['Despojado, jeans e camiseta','60 70'],['Ousado, cheio de brilho e cor','80 90'],['Confortável e do meu jeito','10']]],
+['O que você faz numa festa?',[['Puxo a roda de samba','40 70'],['Fico no meio da pista','80 90'],['Converso num cantinho','60 10'],['Canto todas as músicas','50 10']]],
+['Qual palavra combina mais com você?',[['Nostalgia','40 50 60'],['Rebeldia','50 80'],['Mistura de culturas','90 70'],['Hits que grudam','10 90']]],
+['Qual é o seu aparelho de música favorito?',[['O rádio','40 50'],['Vinil e toca-discos','60 70'],['Walkman e fita','80 90'],['Celular com fone','10']]]
+];
+const QS=[
+['Numa terça-feira qualquer, a cena do seu filme é...',[['Café, janela e chuva',{a:.8,e:.2,v:.4,l:.1}],['Trânsito, fone no ouvido e pressa',{e:.7,t:.8,l:.7}],['Almoço em família, todo mundo falando',{v:.8,a:.6,d:.6}],['Treino na academia',{e:.95,l:.9,t:.8}]]],
+['O que toca quando você está sozinho em casa?',[['Algo calminho, quase sem volume',{e:.15,l:.1,a:.7}],['Playlist animada para arrumar a casa',{e:.8,d:.8,v:.8}],['Um disco inteiro de um artista só',{du:.8,p:.3}],['Nada, prefiro o silêncio',{e:.1,l:.05}]]],
+['Você conquistou algo enorme. A cena é...',[['Festa com todo mundo cantando',{v:.95,d:.8,l:.8,p:.8}],['Um abraço silencioso e lágrimas',{v:.2,e:.3,a:.7}],['Você correndo de braços abertos',{e:.9,t:.9,v:.8}],['Um brinde num bar com os amigos',{a:.5,v:.7,d:.6}]]],
+['A trilha da cena do "eu consegui" é...',[['Épica, sobe devagar até explodir',{e:.9,l:.9,du:.8}],['Um hit que todo mundo conhece',{p:.95,d:.7}],['Uma batida pesada de pista',{d:.9,e:.9,a:.05}],['Algo emocionante, com voz forte',{v:.4,a:.5,e:.6}]]],
+['O primeiro encontro do casal é...',[['Jantar à luz de velas',{e:.25,a:.7,v:.6,l:.2}],['Dançando até tarde',{d:.95,e:.8,v:.8}],['Passeio de mãos dadas no fim da tarde',{a:.6,v:.7,e:.4,t:.3}],['Um olhar no meio de um show',{e:.8,l:.9,v:.5}]]],
+['Quando o romance dá errado, a cena é...',[['Chuva e fone de ouvido',{v:.05,e:.3,a:.5}],['Chorar com a música alta',{v:.15,e:.85,l:.9}],['Desabafar falando e rimando',{d:.6,v:.3,e:.6,p:.5}],['Seguir em frente dançando',{v:.8,d:.9,e:.8}]]],
+['A grande aventura é...',[['Estrada com a janela aberta',{t:.7,e:.7,v:.7,a:.5}],['Uma viagem para o outro lado do mundo',{p:.9,d:.7,a:.2,e:.7}],['Uma fuga cheia de perigo',{e:.95,t:.9,v:.2,l:.9}],['Uma trilha na natureza',{a:.9,e:.35,t:.2}]]],
+['O clímax da aventura tem uma trilha...',[['Rápida, de tirar o fôlego',{t:.95,e:.95}],['Misteriosa e longa',{du:.95,v:.2,e:.5}],['Pesada, de sentir o peito vibrar',{l:.95,e:.9}],['Alegre, com refrão para cantar junto',{v:.9,d:.8,p:.7}]]]
+];
+const QN={
+ estilo:{n:'Descubra o seu estilo',d:'Oito perguntas sobre o seu gosto e o gênero que mais combina com ele.',m:'8 perguntas',q:Q},
+ humor:{n:'Humor do dia',d:'Como você está hoje? Descubra o gênero e a música certa para o seu dia.',m:'5 perguntas',q:QH},
+ decada:{n:'Qual década combina com você?',d:'Seu jeito de ser tem a cara de qual época? Descubra a sua década e os gêneros que nasceram nela.',m:'6 perguntas',q:QD},
+ historia:{n:'Qual é o gênero da sua história?',d:'Imagine que sua vida é um filme ou uma série. Qual gênero toca nos seus momentos, conquistas, romances e aventuras?',m:'8 perguntas',q:QS},
+ duelo:{n:'Duelo dos dados',d:'Dez duelos entre gêneros. Adivinhe qual tem mais energia, dançabilidade, volume e mais, e confira nos números reais.',m:'10 duelos'}
+};
 const FK=FE.map(f=>f.k),MM=FK.map(k=>{const v=keys.map(o=>DATA[o][k]);return[Math.min(...v),Math.max(...v)]});
 const gv=o=>FK.map((k,i)=>(DATA[o][k]-MM[i][0])/(MM[i][1]-MM[i][0]));
-function quiz(push){
-  const r=document.documentElement.style;r.setProperty('--g','#eeeaff');
+const aff=d=>Math.max(1,Math.min(99,Math.round(100*(1-d*1.6))));
+function best(A){
+  const tv=FK.map(()=>[]);A.forEach(s=>FK.forEach((k,x)=>{if(s[k]!=null)tv[x].push(s[k])}));
+  const T=tv.map(a=>a.length?a.reduce((p,c)=>p+c,0)/a.length:.5),W=tv.map(a=>a.length?1:.3),sw=W.reduce((a,b)=>a+b,0);
+  const R=keys.map(o=>{const v=gv(o);return{o,v,aff:aff(Math.sqrt(v.reduce((a,x,i)=>a+W[i]*(x-T[i])**2,0)/sw))}}).sort((a,b)=>b.aff-a.aff);
+  return{T,tv,R};
+}
+const accent=c=>document.documentElement.style.setProperty('--g',c);
+const ansOf=(Z)=>qs.a.map((j,i)=>Z[i][1][j][1]);
+let qs={id:'',i:0,a:[]},ds={};
+function quiz(key,push){
+  accent('#eeeaff');
   document.querySelectorAll('[role=tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.k=='quiz'));
   document.title='Gênero a gênero';
-  if(push&&location.hash!='#quiz')history.replaceState(null,'','#quiz');
-  qs={i:0,a:[]};qView();
+  if(push&&location.hash!='#'+key)history.replaceState(null,'','#'+key);
+  if(key=='quiz')return hub();
+  start(key.slice(5));
+}
+function hub(){
+  $('panel').innerHTML=`<p class="place">Cinco jeitos de descobrir o seu som</p><h1>Quizzes</h1><div class="qgrid">${Object.entries(QN).map(([id,z])=>`<button class="qcard" data-qz="${id}"><b>${z.n}</b><span>${z.d}</span><em>${z.m}</em></button>`).join('')}</div>`;
+}
+function start(id){
+  if(!QN[id])return hub();
+  if(location.hash!='#quiz-'+id)history.replaceState(null,'','#quiz-'+id);
+  qs={id,i:0,a:[]};
+  if(id=='duelo')return dStart();
+  qView();
 }
 function qView(){
-  if(qs.i>=Q.length)return qResult();
-  const [q,o]=Q[qs.i];
-  $('panel').innerHTML=`<p class="place">Pergunta ${qs.i+1} de ${Q.length}</p><div class="pbar"><i style="width:${qs.i/Q.length*100}%"></i></div><h1 class="qh">${q}</h1><ul class="opts">${o.map((x,j)=>`<li><button data-j="${j}">${x[0]}</button></li>`).join('')}</ul>${qs.i?'<button class="back" id="qb">Voltar</button>':''}`;
+  const Z=QN[qs.id];if(qs.i>=Z.q.length)return qResult();
+  const [q,o]=Z.q[qs.i];
+  $('panel').innerHTML=`<p class="place">${Z.n} · pergunta ${qs.i+1} de ${Z.q.length}</p><div class="pbar"><i style="width:${qs.i/Z.q.length*100}%"></i></div><h1 class="qh">${q}</h1><ul class="opts">${o.map((x,j)=>`<li><button data-j="${j}">${x[0]}</button></li>`).join('')}</ul>${qs.i?'<button class="back" id="qb">Voltar</button>':''}`;
 }
-function qResult(){
-  const tv=FK.map(()=>[]);
-  qs.a.forEach((j,i)=>{const s=Q[i][1][j][1];FK.forEach((k,x)=>{if(s[k]!=null)tv[x].push(s[k])})});
-  const T=tv.map(a=>a.length?a.reduce((p,c)=>p+c,0)/a.length:.5),W=tv.map(a=>a.length?1:.3);
-  const R=keys.map(o=>{const v=gv(o);const d=Math.sqrt(v.reduce((a,x,i)=>a+W[i]*(x-T[i])**2,0)/W.reduce((a,b)=>a+b,0));return{o,aff:Math.max(1,Math.min(99,Math.round(100*(1-d*1.6)))),v}}).sort((a,b)=>b.aff-a.aff);
-  const top=R[0],g=G[keys.indexOf(top.o)],r=document.documentElement.style;
-  r.setProperty('--g',g[2]);r.setProperty('--f',g[3]);document.body.style.color=g[3];
+const tail=(k)=>`<p><button class="btn" data-k="${k}">Ver o que os dados dizem sobre ${nm(k)}</button><button class="btn" id="redo">Refazer o quiz</button><button class="btn" data-go="quiz">Outros quizzes</button></p>`;
+function qResult(){({estilo:rEstilo,humor:rHumor,decada:rDecada,historia:rHist})[qs.id]();}
+function rEstilo(){
+  const {T,tv,R}=best(ansOf(Q)),top=R[0],g=G[keys.indexOf(top.o)];accent(g[2]);
   const why=FE.map((f,i)=>({f,i,d:Math.abs(top.v[i]-T[i])})).filter(x=>tv[x.i].length).sort((a,b)=>a.d-b.d).slice(0,3).map(x=>{
     const lv=T[x.i]<.34?'baixo':T[x.i]<.67?'médio':'alto';
     return `<li>${x.f.n}: você pediu um nível ${lv}, e o ${g[1]} fica em ${rk(x.f.k,top.o)}º de 15, com ${fm(x.f,DATA[top.o][x.f.k])}.</li>`}).join('');
   $('panel').innerHTML=`<p class="place">O seu estilo ideal é</p><h1>${g[1]}</h1><p class="story">${g[5]}</p>
-  <h2>Por que combina</h2><ul class="why">${why}</ul><p class="story">Afinidade de ${top.aff}%. Também combinam: ${R[1].o?G[keys.indexOf(R[1].o)][1]:''} (${R[1].aff}%) e ${G[keys.indexOf(R[2].o)][1]} (${R[2].aff}%).</p>
-  <p><button class="btn" data-k="${top.o}">Ver o que os dados dizem sobre ${g[1]}</button><button class="btn" data-k="${R[1].o}">Ver ${G[keys.indexOf(R[1].o)][1]}</button><button class="btn" id="redo">Refazer o teste</button></p>`;
+  <h2>Por que combina</h2><ul class="why">${why}</ul><p class="story">Afinidade de ${top.aff}%. Também combinam: ${nm(R[1].o)} (${R[1].aff}%) e ${nm(R[2].o)} (${R[2].aff}%).</p>${tail(top.o)}`;
+}
+function rHumor(){
+  const {T,R}=best(ansOf(QH)),top=R[0],g=G[keys.indexOf(top.o)];accent(g[2]);
+  const e=T[3]>=.5,v=T[6]>=.5,mood=e&&v?'Dia de festa':e?'Dia de intensidade':v?'Dia de leveza':'Dia de recolhimento';
+  const s=DATA[top.o].tr[qs.a.reduce((a,b)=>a+b,0)%3];
+  $('panel').innerHTML=`<p class="place">O seu humor de hoje</p><h1>${mood}</h1><p class="story">A trilha de hoje é <b style="color:${g[2]}">${g[1]}</b>, com afinidade de ${top.aff}% com o seu dia.</p>
+  <h2>Para ouvir agora</h2><div class="songs"><a class="song yt" href="${yt(s)}" target="_blank" rel="noopener"><img class="cov" data-sp="${yt(s)}" alt="" width="64" height="64"><div class="tx"><b>${s[0]}</b><span>${s[1]} · popularidade ${s[2]}</span></div></a></div>
+  <p class="hint">Clique na música para ouvir no Spotify.</p>${tail(top.o)}`;
+  covers();
+}
+function rDecada(){
+  const sc={};qs.a.forEach((j,i)=>QD[i][1][j][1].split(' ').forEach(c=>sc[c]=(sc[c]||0)+1));
+  const d=[...DEC].sort((a,b)=>(sc[b.k]||0)-(sc[a.k]||0))[0];accent(ac(d.g[0]));
+  $('panel').innerHTML=`<p class="place">A década que combina com você</p><h1>${d.n}</h1><p class="story">${d.t}</p>
+  <h2>Gêneros dessa época</h2><div class="chaps">${d.g.map(o=>`<button class="chap" data-k="${o}"><small>${G[keys.indexOf(o)][4]}</small><b style="color:${ac(o)}">${nm(o)}</b><span>Ver os dados</span></button>`).join('')}</div>
+  <p><button class="btn" id="redo">Refazer o quiz</button><button class="btn" data-go="quiz">Outros quizzes</button></p>`;
+}
+const CH=[['Nos seus momentos',[0,1]],['Nas suas conquistas',[2,3]],['Nos seus romances',[4,5]],['Nas suas aventuras',[6,7]]];
+function rHist(){
+  const A=ansOf(QS),all=best(A),top=all.R[0],g=G[keys.indexOf(top.o)];accent(g[2]);
+  const cards=CH.map(([t,ix])=>{const b=best(ix.map(i=>A[i])),o=b.R[0].o;return `<button class="chap" data-k="${o}"><small>${t}</small><b style="color:${ac(o)}">${nm(o)}</b><span>Afinidade de ${b.R[0].aff}%</span></button>`}).join('');
+  $('panel').innerHTML=`<p class="place">A trilha sonora da sua história é</p><h1>${g[1]}</h1><p class="story">Se a sua vida fosse um filme ou uma série, este seria o gênero que mais aparece na trilha. Afinidade de ${top.aff}%.</p>
+  <h2>Capítulo a capítulo</h2><div class="chaps">${cards}</div>
+  <p><button class="btn" id="redo">Refazer o quiz</button><button class="btn" data-go="quiz">Outros quizzes</button></p>`;
+}
+/* duelo dos dados */
+const DUQ={p:'é mais popular',du:'tem as músicas mais longas',d:'é mais dançante',e:'é mais energético',l:'toca mais alto',a:'é mais acústico',v:'é mais alegre',t:'é mais acelerado'};
+function dStart(){
+  accent('#ff5a4f');const r=[];let guard=0;
+  while(r.length<10&&guard++<800){
+    const f=FE[Math.floor(Math.random()*FE.length)],a=keys[Math.floor(Math.random()*15)],b=keys[Math.floor(Math.random()*15)],i=FK.indexOf(f.k);
+    if(a==b||Math.abs(gv(a)[i]-gv(b)[i])<.15||r.some(x=>x.f==f&&(x.a==a||x.a==b||x.b==a||x.b==b)))continue;
+    r.push({f,a,b});
+  }
+  ds={i:0,s:0,st:0,bs:0,r,log:[],done:0};dView();
+}
+function dView(){
+  if(ds.i>=ds.r.length)return dEnd();
+  const r=ds.r[ds.i];ds.done=0;
+  $('panel').innerHTML=`<p class="place">Duelo dos dados · rodada ${ds.i+1} de ${ds.r.length}</p><div class="pbar"><i style="width:${ds.i/ds.r.length*100}%"></i></div><h1 class="qh">Qual gênero ${DUQ[r.f.k]}?</h1>
+  <div class="duel">${[r.a,r.b].map((o,j)=>`<button class="dcard" data-d="${j}" style="--c:${ac(o)}"><b>${nm(o)}</b><span class="dv"></span></button>`).join('<i class="vs">x</i>')}</div>
+  <div id="dres" class="dres"></div><p class="dst">Acertos: ${ds.s} · Sequência: ${ds.st}</p>`;
+}
+function dPick(j){
+  if(ds.done)return;ds.done=1;
+  const r=ds.r[ds.i],k=r.f.k,va=DATA[r.a][k],vb=DATA[r.b][k],w=va>vb?0:1,ok=j==w,mn=MM[FK.indexOf(k)][0],mx=MM[FK.indexOf(k)][1];
+  ds.s+=ok?1:0;ds.st=ok?ds.st+1:0;ds.bs=Math.max(ds.bs,ds.st);ds.log.push({r,ok});
+  document.querySelectorAll('.dcard').forEach((c,x)=>{const v=x?vb:va;c.disabled=true;c.classList.add(x==w?'win':'lose');c.querySelector('.dv').innerHTML=`<em>${fm(r.f,v)}</em><u style="width:${12+88*(v-mn)/(mx-mn)}%"></u>`});
+  const W=w?r.b:r.a,L=w?r.a:r.b;
+  $('dres').innerHTML=`<p><b>${ok?'Acertou.':'Errou.'}</b> ${nm(W)} tem ${fm(r.f,DATA[W][k])} de ${r.f.n.toLowerCase()}, contra ${fm(r.f,DATA[L][k])} do ${nm(L)}.</p><button class="btn" id="dn">${ds.i+1<ds.r.length?'Próxima rodada':'Ver resultado'}</button>`;
+}
+function dEnd(){
+  const n=ds.r.length,s=ds.s,ti=s>=9?'Mestre dos dados':s>=7?'Detetive de dados':s>=4?'Ouvido treinado':'Ouvido em aquecimento';
+  $('panel').innerHTML=`<p class="place">Seu resultado no duelo</p><h1>${s} de ${n}</h1><p class="story"><b>${ti}.</b> Maior sequência de acertos: ${ds.bs}.</p>
+  <h2>Rodada a rodada</h2><ul class="why">${ds.log.map(x=>`<li>${nm(x.r.a)} x ${nm(x.r.b)} em ${x.r.f.n.toLowerCase()}: ${x.ok?'você acertou':'você errou'}.</li>`).join('')}</ul>
+  <p><button class="btn" id="redo">Jogar de novo</button><button class="btn" data-go="quiz">Outros quizzes</button></p>`;
 }
 $('panel').addEventListener('click',e=>{
-  const o=e.target.closest('.opts button');
-  if(o){qs.a.push(+o.dataset.j);qs.i++;qView();return}
-  if(e.target.closest('#qb')){qs.a.pop();qs.i--;qView();return}
-  if(e.target.closest('#redo')){quiz(false);return}
-  const b=e.target.closest('.btn[data-k]');if(b){go(b.dataset.k);scrollTo({top:0,behavior:'smooth'})}
+  const c=s=>e.target.closest(s);let x;
+  if(x=c('[data-qz]')){start(x.dataset.qz);scrollTo({top:0,behavior:'smooth'});return}
+  if(x=c('.opts button')){qs.a.push(+x.dataset.j);qs.i++;qView();return}
+  if(c('#qb')){qs.a.pop();qs.i--;qView();return}
+  if(c('#redo')){start(qs.id);return}
+  if(x=c('.dcard')){dPick(+x.dataset.d);return}
+  if(c('#dn')){ds.i++;dView();return}
+  if(x=c('.btn[data-k],.chap[data-k]')){go(x.dataset.k);scrollTo({top:0,behavior:'smooth'})}
 });
 addEventListener('hashchange',()=>go(location.hash.slice(1),false));
 go(location.hash.slice(1),false);
